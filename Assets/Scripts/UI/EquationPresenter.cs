@@ -23,7 +23,7 @@ namespace UI
 
         public void WriteText(string text)
         {
-            _text = _text.Insert(_text.Length, text);
+            _text = text;
             UpdateEquationText();
         }
 

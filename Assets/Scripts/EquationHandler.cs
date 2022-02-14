@@ -14,17 +14,12 @@ public class EquationHandler : MonoBehaviour
     [SerializeField] private Button _calculateButton;
 
     private readonly float[] _numbers = new float[2];
-    private readonly bool[] _isNumberChosen = new bool[2];
     private readonly string[] _figures = { string.Empty, string.Empty};
+
+    private Signs _sign = Signs.None;
     
-    private readonly Signs[] _signs = new Signs[1];
-    
-    // private Signs _sign;
     private float _answer;
-
-    private string _number1 = string.Empty;
-    private string _number2 = string.Empty;
-
+    
     private readonly Dictionary<Signs, ICalculate> _mathActions = new Dictionary<Signs, ICalculate>
     {
         { Signs.Addition, new Addition() },
@@ -43,54 +38,34 @@ public class EquationHandler : MonoBehaviour
 
     public void ClearEquation()
     {
-        for (int i = 0; i < _isNumberChosen.Length; i++)
+        for (int i = 0; i < _figures.Length; i++)
         {
-            _isNumberChosen[i] = false;
+            _figures[i] = string.Empty;
         }
 
-        _signs[0] = Signs.None;
+        _sign = Signs.None;
     }
 
     public void SetNumber(string number)
     {
-        if (AreNumbersFilled()) return;
-
-        if (_signs[0] == Signs.None)
+        if (_sign == Signs.None)
         {
             _figures[0] = _figures[0].Insert(_figures[0].Length, number);
+            _equationPresenter.WriteText($"{_figures[0]}");
         }
         else
         {
             _figures[1] = _figures[1].Insert(_figures[1].Length, number);
+            _equationPresenter.WriteText($"{_figures[0]}{_signIcons[_sign]}{_figures[1]}");
         }
-
-        // if (_sign == Signs.None)
-        // {
-        //     _number1 = _number1.Insert(_number1.Length, number);
-        // }
-        // else
-        // {
-        //     _number2 = _number2.Insert(_number2.Length, number);
-        // }
-        
-        // for (int i = 0; i < _isNumberChosen.Length; i++)
-        // {
-        //     if (_isNumberChosen[i]) continue;
-        //
-        //     _numbers[i] = number;
-        //     _isNumberChosen[i] = true;
-        //     _equationPresenter.WriteText(number.ToString());
-        //
-        //     break;
-        // }
     }
 
     public void ChooseSign(Signs sign)
     {
-        if (_signs[0] != Signs.None) return;
+        if (_figures[0] == string.Empty || _sign != Signs.None) return;
         
-        _signs[0] = sign;
-        _equationPresenter.WriteText(_signIcons[sign]);
+        _sign = sign;
+        _equationPresenter.WriteText($"{_figures[0]}{_signIcons[_sign]}");
     }
 
     private void Awake()
@@ -100,18 +75,18 @@ public class EquationHandler : MonoBehaviour
 
     private void Calculate()
     {
+        if (_figures[1] == string.Empty) return;
+        
         for (int i = 0; i < _numbers.Length; i++)
         {
             _numbers[i] = int.Parse(_figures[i]);
         }
         
-        ICalculate mathAction = _mathActions[_signs[0]];
+        ICalculate mathAction = _mathActions[_sign];
         _answer = mathAction.Calculate(_numbers[0], _numbers[1]);
 
         _equationPresenter.ShowAnswer(_answer);
 
         ClearEquation();
     }
-
-    private bool AreNumbersFilled() => _isNumberChosen[0] && _isNumberChosen[1];
 }
